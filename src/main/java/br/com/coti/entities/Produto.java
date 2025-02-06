@@ -13,12 +13,10 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Produto {
-	
+public class Produto {	
 	private UUID id;
 	private String nome;
 	private double preco;
 	private Integer quantidade;
-	private Categoria categoria;
-	
+	private Categoria categoria;	
 }

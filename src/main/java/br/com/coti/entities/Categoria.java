@@ -17,7 +17,5 @@ import lombok.ToString;
 public class Categoria {
 	private UUID id;
 	private String nome;
-	
 	private List<Produto> produtos;	
-
 }
