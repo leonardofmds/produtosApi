@@ -55,7 +55,7 @@
                 <executions>
                     <execution>
                         <id>integration-tests</id>
-                        <phase>verify</phase> <!-- Run after package -->
+                        <phase>verify</phase>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
