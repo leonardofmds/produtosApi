@@ -10,10 +10,17 @@ import br.com.coti.entities.Categoria;
 import br.com.coti.repositories.CategoriaRepository;
 import io.swagger.v3.oas.annotations.Operation;
 
+/**
+ * Classe de controle para a entidade Categoria
+ */
 @RestController
 @RequestMapping("/api/categorias/")
 public class CategoriasController {
-	
+
+	/**
+	 * Método para consultar todas as categorias cadastradas no sistema
+	 * @return List<Categoria>
+	 */
 	@Operation(summary = "Serviço para consultar todas as categorias cadastradas no sistema")
 	@GetMapping("/consultar")
 	public List<Categoria> consultar() {
