@@ -9,6 +9,16 @@ on:
 jobs:
   sonarqube:
     runs-on: ubuntu-latest
+    services:
+      sonarqube:
+        image: sonarqube:community
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd="curl -s http://localhost:9000/api/system/health | grep -q UP"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,6 +34,18 @@ jobs:
         with:
           maven-version: 3.9.6
 
+      - name: Wait for SonarQube to be ready
+        run: |
+          echo "Waiting for SonarQube to be ready..."
+          for i in {1..30}; do
+            if curl -s http://localhost:9000/api/system/health | grep -q UP; then
+              echo "SonarQube is up and running!"
+              break
+            fi
+            echo "Waiting for SonarQube..."
+            sleep 10
+          done
+
       - name: Cache SonarQube packages
         uses: actions/cache@v3
         with:
@@ -35,5 +57,6 @@ jobs:
         run: |
           mvn clean verify sonar:sonar \
             -Dsonar.projectKey=your_project_key \
-            -Dsonar.host.url=http://your-sonarqube-server-url \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=admin \
+            -Dsonar.password=admin
