@@ -11,6 +11,7 @@
 	<groupId>br.com.coti</groupId>
 	<artifactId>produtosApi</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	<name>produtosApi</name>
 	<description>API de produtos</description>
 	<url/>
@@ -20,6 +21,10 @@
 	<developers>
 		<developer/>
 	</developers>
+	<modules>
+		<module>application</module>
+		<module>integration-test</module>
+	</modules>
 	<scm>
 		<connection/>
 		<developerConnection/>
@@ -69,6 +74,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>  <!-- Skip repackaging -->
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

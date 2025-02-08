@@ -19,7 +19,6 @@ public class CategoriasController {
 	public List<Categoria> consultar() {
 
 		try {
-
 			CategoriaRepository repository = new CategoriaRepository();
 			return repository.findAll();
 		} catch (Exception e) {
