@@ -8,9 +8,14 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 
+
 @Configuration
 public class SwaggerConfiguration {
 
+	/**
+	 * Método para configurar o Swagger
+	 * @return OpenAPI
+	 */
 	@Bean
 	OpenAPI customOpenApi() {
 		var openApi = new OpenAPI().components(new Components())

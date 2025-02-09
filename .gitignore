@@ -35,7 +35,6 @@ Thumbs.db
 # Arquivos de ambiente e credenciais
 .env
 *.properties
-*.yml
 !application.properties
 !application.yml
 
@@ -56,3 +55,5 @@ Thumbs.db
 *.swo
 *.bak
 *~
+
+*target
