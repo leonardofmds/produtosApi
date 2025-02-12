@@ -1,5 +1,6 @@
 package br.com.coti.repositories;
 
+import br.com.coti.entities.Categoria;
 import br.com.coti.entities.Produto;
 import br.com.coti.factories.ConnectionFactory;
 
@@ -17,17 +18,19 @@ public class ProdutoRepository {
         Connection connection = ConnectionFactory.getConnection();
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PRODUTO");
+        var categoriaRepository = new CategoriaRepository();
 
         var produtos = new ArrayList<Produto>();
 
         while (resultSet.next()) {
-
+            Categoria categoria = categoriaRepository.findById((UUID)resultSet.getObject("categoria_id"));
             Produto produto = new Produto();
             produto.setId((UUID)resultSet.getObject("id"));
             produto.setId(UUID.fromString(resultSet.getString("id")));
             produto.setNome(resultSet.getString("nome"));
             produto.setPreco(resultSet.getDouble("preco"));
             produto.setQuantidade(resultSet.getInt("quantidade"));
+            produto.setCategoria(categoria);
 
             produtos.add(produto);
         }
@@ -106,14 +109,18 @@ public class ProdutoRepository {
         ResultSet resultSet = statement.executeQuery();
 
         Produto produto = null;
+        Categoria categoria = null;
 
         if (resultSet.next()) {
+            var categoriaRepository = new CategoriaRepository();
+            categoria = categoriaRepository.findById((UUID)resultSet.getObject("categoria_id"));
+
             produto = new Produto();
             produto.setId((UUID)resultSet.getObject("id"));
-            produto.setId(UUID.fromString(resultSet.getString("id")));
             produto.setNome(resultSet.getString("nome"));
             produto.setPreco(resultSet.getDouble("preco"));
             produto.setQuantidade(resultSet.getInt("quantidade"));
+            produto.setCategoria(categoria);
         }
 
         connection.close();

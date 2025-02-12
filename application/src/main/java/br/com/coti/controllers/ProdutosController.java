@@ -1,13 +1,15 @@
 package br.com.coti.controllers;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import br.com.coti.entities.Produto;
+import br.com.coti.repositories.ProdutoRepository;
+import org.apache.coyote.Response;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Classe de controle para a entidade Produto
@@ -19,27 +21,86 @@ public class ProdutosController {
 
 	@Operation(summary = "Serviço para cadastrar um novo produto")
 	@PostMapping("/cadastrar")
-	public void cadastrarProduto() {
-		//TODO implementar o serviço de cadastro de produtos
+	public ResponseEntity<String> cadastrarProduto(@RequestBody Produto produto) {
+		var produtoRepository = new ProdutoRepository();
 
+		try {
+			produtoRepository.create(produto);
+			return ResponseEntity.ok("Produto cadastrado com sucesso.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body("Erro ao cadastrar o produto.: "+e.getMessage());
+		}
 	}
 	
 	@Operation(summary = "Serviço para atualizar um produto")
 	@PutMapping("/atualizar")
-	public void atualizarProduto() {
-		//TODO implementar o serviço de atualização de produtos
+	public ResponseEntity<String> atualizarProduto(@RequestBody Produto produto) {
+		var produtoRepository = new ProdutoRepository();
 
+		try {
+			if(produto.getCategoria()==null){
+				var produtoComCategoria = produtoRepository.findById(produto.getId());
+				produto.setCategoria(produtoComCategoria.getCategoria());
+			}
+			produtoRepository.update(produto);
+			return ResponseEntity.ok("Produto atualizado com sucesso.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body("Erro ao atualizar o produto.: "+e.getMessage());
+		}
 	}
 	
 	@Operation(summary = "Serviço para excluir um produto")
 	@DeleteMapping("/excluir")
-	public void excluirProduto() {
-		// TODO implementar o serviço de exclusão de produtos
+	public ResponseEntity<String> excluirProduto(@RequestParam UUID id) {
+		var produtoRepository = new ProdutoRepository();
+		
+		try {
+			produtoRepository.delete(id);
+			return ResponseEntity.ok("Produto excluído com sucesso.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body("Erro ao excluir o produto.: "+e.getMessage());
+		}
 	}
 	
 	@Operation(summary = "Serviço para consultar todos os produtos")
 	@GetMapping("/consultar")
-	public void consultarProdutos() {
-		//TODO implementar o serviço de consulta de produtos
+	public ResponseEntity<List<Produto>> consultarProdutos() {
+		var produtoRepository = new ProdutoRepository();
+
+		try {
+			var produtos = produtoRepository.findAll();
+			if(!produtos.isEmpty()){
+				return ResponseEntity.ok(produtos);
+			}
+			else {
+				return ResponseEntity.notFound().build();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body(null);
+		}
+	}
+
+	@Operation(summary = "Serviço para consultar um produto pelo id")
+	@GetMapping("/consultar/{id}")
+	public ResponseEntity<Produto> consultarProduto(@PathVariable UUID id) {
+		var produtoRepository = new ProdutoRepository();
+		Produto produto = null;
+
+		try {
+			produto = produtoRepository.findById(id);
+			if(produto!=null) {
+				return ResponseEntity.ok(produto);
+			}
+			else {
+				return ResponseEntity.notFound().build();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body(null);
+		}
 	}
 }
