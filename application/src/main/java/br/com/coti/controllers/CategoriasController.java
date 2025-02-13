@@ -1,11 +1,13 @@
 package br.com.coti.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.coti.dtos.CategoriaResponseDto;
 import br.com.coti.entities.Categoria;
 import br.com.coti.repositories.CategoriaRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,11 +25,23 @@ public class CategoriasController {
 	 */
 	@Operation(summary = "Serviço para consultar todas as categorias cadastradas no sistema")
 	@GetMapping("/consultar")
-	public List<Categoria> consultar() {
+	public List<CategoriaResponseDto> consultar() {
 
 		try {
 			CategoriaRepository repository = new CategoriaRepository();
-			return repository.findAll();
+			var categorias =  repository.findAll();
+			
+			var response = new ArrayList<CategoriaResponseDto>();
+			
+			for (var categoria : categorias) { 
+				var dto = new CategoriaResponseDto();
+				dto.setId(categoria.getId());
+				dto.setNome(categoria.getNome());
+				
+				response.add(dto);
+			}
+			
+			return response;
 		} catch (Exception e) {
 
 			System.out.println(e.getMessage());
