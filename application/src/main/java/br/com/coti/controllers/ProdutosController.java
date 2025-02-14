@@ -2,11 +2,10 @@ package br.com.coti.controllers;
 
 import br.com.coti.entities.Produto;
 import br.com.coti.repositories.ProdutoRepository;
-import org.apache.coyote.Response;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import io.swagger.v3.oas.annotations.Operation;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,21 +14,23 @@ import java.util.UUID;
  * Classe de controle para a entidade Produto
  */
 @RestController
+@Slf4j
 @RequestMapping("/api/produtos/")
 public class ProdutosController {
 
 
 	@Operation(summary = "Serviço para cadastrar um novo produto")
 	@PostMapping("/cadastrar")
-	public ResponseEntity<String> cadastrarProduto(@RequestBody Produto produto) {
+	public ResponseEntity<?> cadastrarProduto(@RequestBody Produto produto) {
 		var produtoRepository = new ProdutoRepository();
 
 		try {
 			produtoRepository.create(produto);
 			return ResponseEntity.ok("Produto cadastrado com sucesso.");
 		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.badRequest().body("Erro ao cadastrar o produto.: "+e.getMessage());
+			log.error("Erro ao cadastrar o produto: " + e.getMessage());
+			// Não se responde com a exceção, pois a mensagem pode conter informações sensíveis
+			return ResponseEntity.badRequest().body("Erro ao cadastrar o produto.");
 		}
 	}
 	
@@ -46,7 +47,7 @@ public class ProdutosController {
 			produtoRepository.update(produto);
 			return ResponseEntity.ok("Produto atualizado com sucesso.");
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 			return ResponseEntity.badRequest().body("Erro ao atualizar o produto.: "+e.getMessage());
 		}
 	}
@@ -79,7 +80,7 @@ public class ProdutosController {
 				return ResponseEntity.notFound().build();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 			return ResponseEntity.badRequest().body(null);
 		}
 	}
@@ -99,7 +100,7 @@ public class ProdutosController {
 				return ResponseEntity.notFound().build();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 			return ResponseEntity.badRequest().body(null);
 		}
 	}
