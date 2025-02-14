@@ -31,5 +31,6 @@ public class CategoryIT {
         RestAssured.get(BASE_URL + "/consultar")
                 .then()
                 .statusCode(200);
+
     }
 }
