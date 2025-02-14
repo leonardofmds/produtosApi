@@ -61,7 +61,7 @@ public class ProdutosController {
 			produtoRepository.delete(id);
 			return ResponseEntity.ok("Produto excluído com sucesso.");
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 			return ResponseEntity.badRequest().body("Erro ao excluir o produto.: "+e.getMessage());
 		}
 	}
@@ -89,7 +89,7 @@ public class ProdutosController {
 	@GetMapping("/consultar/{id}")
 	public ResponseEntity<Produto> consultarProduto(@PathVariable UUID id) {
 		var produtoRepository = new ProdutoRepository();
-		Produto produto = null;
+		Produto produto;
 
 		try {
 			produto = produtoRepository.findById(id);

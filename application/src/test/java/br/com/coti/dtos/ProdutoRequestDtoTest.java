@@ -42,9 +42,8 @@ class ProdutoRequestDtoTest {
         Set<ConstraintViolation<ProdutoRequestDto>> violations = validator.validate(produtoRequestDto);
         Assertions.assertFalse(violations.isEmpty());
 
-        violations.forEach(violation -> {
-            Assertions.assertEquals("Por favor, informe um nome entre 8 e 100 caracteres", violation.getMessage());
-        });
+        violations.forEach(violation ->
+                Assertions.assertEquals("Por favor, informe um nome entre 8 e 100 caracteres", violation.getMessage()));
     }
 
 }
