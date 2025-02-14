@@ -2,6 +2,7 @@ package br.com.coti.setup.database;
 
 
 import br.com.coti.factories.ConnectionFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -10,6 +11,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.UUID;
 
+@Slf4j
 @Component
 public class Postgresql {
 
@@ -31,6 +33,7 @@ public class Postgresql {
                 ));
 
         postgres.start();
+        addCategories();
 
 
 
@@ -44,22 +47,56 @@ public class Postgresql {
 
             Statement statement = connection.createStatement();
 
+            createTables(connection);
 
-
-
-            statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  new UUID(2, 2) + "', 'INFORMATICA')");
-            statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  new UUID(2, 2) + "', 'ELETRÔNICOS')");
-            statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  new UUID(2, 2) + "', 'OUTROS')");
+            log.info("Inserting categories");
+            statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +   UUID.randomUUID() + "', 'INFORMATICA')");
+            statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  UUID.randomUUID()  + "', 'ELETRÔNICOS')");
+            statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  UUID.randomUUID()  + "', 'OUTROS')");
+            statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  UUID.randomUUID()  + "', 'VESTUARIO')");
+            statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  UUID.randomUUID()  + "', 'PAPELARIA')");
 
 
 
             connection.close();
+            log.info("Categories inserted");
 
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    };
+    }
+
+
+
+    private void createTables(Connection connection) {
+        log.info("Creating tables");
+        try {
+            Statement statement = connection.createStatement();
+            String createCategoryTableSQL = "CREATE TABLE IF NOT EXISTS CATEGORIA (" +
+                    "ID UUID PRIMARY KEY, " +
+                    "NOME VARCHAR(255) NOT NULL)";
+            statement.executeUpdate(createCategoryTableSQL);
+
+            String createProductTableSQL =
+                "CREATE TABLE PRODUTO(" +
+                    "ID UUID PRIMARY KEY DEFAULT gen_random_uuid(), " +
+                    "NOME VARCHAR(50) NOT NULL, " +
+                    "PRECO DECIMAL(10,2) NOT NULL CHECK(PRECO>0), " +
+                    "QUANTIDADE INTEGER NOT NULL, " +
+                    "CATEGORIA_ID UUID NOT NULL, " +
+                    "FOREIGN KEY(CATEGORIA_ID) REFERENCES CATEGORIA(ID)" +
+                ")";
+
+
+            statement.executeUpdate(createProductTableSQL);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        log.info(" Table created");
+    }
+
+
 
     public static void restart() {
         postgres.start();

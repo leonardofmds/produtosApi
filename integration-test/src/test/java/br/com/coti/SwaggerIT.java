@@ -20,7 +20,7 @@ public class SwaggerIT {
     }
 
     @Test
-    public void testSwagger() {
+    public void givenWeHaveApiDocumentationThenReturnOK() {
         RestAssured.get(BASE_URL)
                 .then()
                 .statusCode(200);

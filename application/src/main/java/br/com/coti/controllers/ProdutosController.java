@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class ProdutosController {
 
 		try {
 			produtoRepository.create(produto);
-			return ResponseEntity.ok("Produto cadastrado com sucesso.");
+			return ResponseEntity.created(new URI("")).body("Produto cadastrado com sucesso.");
 		} catch (Exception e) {
 			log.error("Erro ao cadastrar o produto: " + e.getMessage());
 			// Não se responde com a exceção, pois a mensagem pode conter informações sensíveis
@@ -77,7 +78,7 @@ public class ProdutosController {
 				return ResponseEntity.ok(produtos);
 			}
 			else {
-				return ResponseEntity.notFound().build();
+				return ResponseEntity.noContent().build();
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
