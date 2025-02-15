@@ -30,12 +30,15 @@ import java.util.UUID;
 public class ProdutosController {
 
 	ModelMapper mapper = new ModelMapper();
+	private final CategoriaRepository categoriaRepository;
+
+	public ProdutosController(CategoriaRepository categoriaRepository) {
+		this.categoriaRepository = categoriaRepository;
+	}
 
 	@Operation(summary = "Serviço para cadastrar um novo produto")
 	@PostMapping("/cadastrar")
 	public ResponseEntity<?> cadastrarProduto(@RequestBody @Valid ProdutoRequestDto request) {
-		var categoriaRepository = new CategoriaRepository();
-
 
 		try {
 			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))){
@@ -58,7 +61,7 @@ public class ProdutosController {
 	@Operation(summary = "Serviço para atualizar um produto")
 	@PutMapping("/atualizar/{id}")
 	public ResponseEntity<String> atualizarProduto(@RequestBody @Valid ProdutoRequestDto request, @PathVariable UUID id) {
-		var categoriaRepository= new CategoriaRepository();
+
 
 		try {
 			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))){

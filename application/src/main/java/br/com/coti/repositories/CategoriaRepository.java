@@ -2,6 +2,7 @@ package br.com.coti.repositories;
 
 import br.com.coti.entities.Categoria;
 import br.com.coti.factories.ConnectionFactory;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -9,7 +10,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
+@Component
 public class CategoriaRepository {
 	
 	public List<Categoria> findAll() throws Exception {
