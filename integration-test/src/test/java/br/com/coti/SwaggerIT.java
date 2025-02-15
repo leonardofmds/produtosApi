@@ -1,6 +1,7 @@
 package br.com.coti;
 
 import io.restassured.RestAssured;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,6 @@ public class SwaggerIT {
     public void givenWeHaveApiDocumentationThenReturnOK() {
         RestAssured.get(BASE_URL)
                 .then()
-                .statusCode(200);
+                .statusCode(HttpStatus.SC_OK);
     }
 }
