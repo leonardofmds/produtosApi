@@ -1,10 +1,13 @@
 package br.com.coti;
 
 import io.restassured.RestAssured;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+
+import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest(classes = ProdutosApiApplication.class,  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CategoryIT {
@@ -20,16 +23,23 @@ public class CategoryIT {
     }
 
     @Test
-    public void nonExistentEndPoint() {
-        RestAssured.get(BASE_URL + "/swagger-config")
+    public void givenNonExistentEndPointThenReturnNOFOUND() {
+        RestAssured.get(BASE_URL + "/cadastrar")
                 .then()
-                .statusCode(404);
+                .statusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test
-    public void emptyCategory() {
+    public void givenCategoriesExistsThenReturnCategories() {
         RestAssured.get(BASE_URL + "/consultar")
                 .then()
-                .statusCode(200);
+                .statusCode(HttpStatus.SC_OK)
+                .body("size()", equalTo(5))
+                .body("find { it.nome == 'INFORMATICA' }.nome", equalTo("INFORMATICA"))
+                .body("find { it.nome == 'OUTROS' }.nome", equalTo("OUTROS"))
+                .body("find { it.nome == 'PAPELARIA' }.nome", equalTo("PAPELARIA"))
+                .body("find { it.nome == 'VESTUARIO' }.nome", equalTo("VESTUARIO"))
+                .body("find { it.nome == 'ELETRÔNICOS' }.nome", equalTo("ELETRÔNICOS"));
+
     }
 }
