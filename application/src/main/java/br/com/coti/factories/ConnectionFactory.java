@@ -7,7 +7,7 @@ public class ConnectionFactory {
 
 	public static Connection getConnection() throws Exception {
 		
-		var host = "jdbc:postgresql://localhost:5438/bd_produtosapi";
+		var host = "jdbc:postgresql://localhost:5432/bd_produtosapi";
 		var user = "admin";
 		var pass = "senha123";
 		
