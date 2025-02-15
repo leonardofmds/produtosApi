@@ -6,11 +6,15 @@ import br.com.coti.entities.Produto;
 import br.com.coti.repositories.CategoriaRepository;
 import br.com.coti.repositories.ProdutoRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.modelmapper.ModelMapper;
 
 import java.net.URI;
 import java.util.List;
@@ -31,6 +35,7 @@ public class ProdutosController {
 	@PostMapping("/cadastrar")
 	public ResponseEntity<?> cadastrarProduto(@RequestBody @Valid ProdutoRequestDto request) {
 		var categoriaRepository = new CategoriaRepository();
+
 
 		try {
 			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))){
@@ -91,13 +96,20 @@ public class ProdutosController {
 
 	@Operation(summary = "Serviço para consultar todos os produtos")
 	@GetMapping("/consultar")
+	@ApiResponse(responseCode = "200", description = "Sucesso",
+			content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProdutoResponseDto.class)))
 	public ResponseEntity<?> consultarProdutos() {
 		var produtoRepository = new ProdutoRepository();
 
 		try {
 			var produtos = produtoRepository.findAll();
 			if(!produtos.isEmpty()){
-				return ResponseEntity.ok(produtos);
+
+				List<ProdutoResponseDto> response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
+
+				//List<Character> characters = modelMapper.map(integers, new TypeToken<List<Character>>() {}.getType());
+
+				return ResponseEntity.ok(response);
 			}
 			else {
 				return ResponseEntity.status(404).body("Nenhum produto encontrado");
