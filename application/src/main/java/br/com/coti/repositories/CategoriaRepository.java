@@ -1,14 +1,14 @@
 package br.com.coti.repositories;
 
+import br.com.coti.entities.Categoria;
+import br.com.coti.factories.ConnectionFactory;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import br.com.coti.entities.Categoria;
-import br.com.coti.factories.ConnectionFactory;
 
 public class CategoriaRepository {
 	

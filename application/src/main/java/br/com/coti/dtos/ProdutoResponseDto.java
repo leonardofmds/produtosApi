@@ -1,6 +1,5 @@
 package br.com.coti.dtos;
 
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.util.UUID;
