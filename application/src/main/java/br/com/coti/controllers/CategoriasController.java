@@ -20,7 +20,7 @@ import java.util.ArrayList;
 @RequestMapping("/api/categorias/")
 public class CategoriasController {
 	
-	private final ModelMapper mapper = new ModelMapper();
+	ModelMapper mapper = new ModelMapper();
 
 	/**
 	 * Método para consultar todas as categorias cadastradas no sistema
