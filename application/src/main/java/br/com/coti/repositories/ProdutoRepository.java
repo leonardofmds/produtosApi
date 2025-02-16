@@ -5,6 +5,7 @@ import br.com.coti.entities.Produto;
 import br.com.coti.factories.ConnectionFactory;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -13,39 +14,40 @@ import java.util.UUID;
 
 public class ProdutoRepository {
 
-    public List<Produto> findAll() throws Exception {
+    public List<Produto> findAll(){
 
-        Connection connection = ConnectionFactory.getConnection();
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM PRODUTO");
-        var categoriaRepository = new CategoriaRepository();
+        try(Connection connection = ConnectionFactory.getConnection()) {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(
+                    "SELECT * FROM PRODUTO");
+            var categoriaRepository = new CategoriaRepository();
 
-        var produtos = new ArrayList<Produto>();
+            var produtos = new ArrayList<Produto>();
 
-        while (resultSet.next()) {
-            Categoria categoria = categoriaRepository.findById((UUID)resultSet.getObject("categoria_id"));
-            Produto produto = new Produto();
-            produto.setId((UUID)resultSet.getObject("id"));
-            produto.setId(UUID.fromString(resultSet.getString("id")));
-            produto.setNome(resultSet.getString("nome"));
-            produto.setPreco(resultSet.getDouble("preco"));
-            produto.setQuantidade(resultSet.getInt("quantidade"));
-            produto.setCategoria(categoria);
+            while (resultSet.next()) {
+                Categoria categoria = categoriaRepository.findById((UUID)resultSet.getObject("categoria_id"));
+                Produto produto = new Produto();
+                produto.setId((UUID)resultSet.getObject("id"));
+                produto.setNome(resultSet.getString("nome"));
+                produto.setPreco(resultSet.getDouble("preco"));
+                produto.setQuantidade(resultSet.getInt("quantidade"));
+                produto.setCategoria(categoria);
 
-            produtos.add(produto);
+                produtos.add(produto);
+            }
+
+            return produtos;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        connection.close();
-
-        return produtos;
     }
 
     public void create(Produto produto, UUID categoriaId) throws Exception {
 
-    	Connection connection = ConnectionFactory.getConnection();
-    	var statement = connection.prepareStatement("INSERT INTO PRODUTO(NOME,PRECO,QUANTIDADE,CATEGORIA_ID) VALUES(?, ?, ?, ?)");
+        try(Connection connection = ConnectionFactory.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO PRODUTO(NOME,PRECO,QUANTIDADE,CATEGORIA_ID) VALUES(?, ?, ?, ?)");
 
-        try {
             connection.setAutoCommit(false);
             statement.setString(1, produto.getNome());
             statement.setDouble(2, produto.getPreco());
@@ -53,20 +55,14 @@ public class ProdutoRepository {
             statement.setObject(4, categoriaId);
             statement.executeUpdate();
             connection.commit();
-        } catch (Exception e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.close();
         }
     }
 
     public void update(Produto produto) throws Exception {
 
-    	Connection connection = ConnectionFactory.getConnection();
-    	var statement = connection.prepareStatement("UPDATE PRODUTO SET NOME = ?, PRECO = ?, QUANTIDADE = ?, CATEGORIA_ID = ? WHERE ID = ?");
-
-        try {
+    	try(Connection connection = ConnectionFactory.getConnection()){
+            PreparedStatement statement = connection.prepareStatement(
+                    "UPDATE PRODUTO SET NOME = ?, PRECO = ?, QUANTIDADE = ?, CATEGORIA_ID = ? WHERE ID = ?");
             connection.setAutoCommit(false);
             statement.setString(1, produto.getNome());
             statement.setDouble(2, produto.getPreco());
@@ -75,57 +71,50 @@ public class ProdutoRepository {
             statement.setObject(5, produto.getId());
             statement.executeUpdate();
             connection.commit();
-        } catch (Exception e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.close();
         }
     }
 
-    public void delete(UUID id) throws Exception {
+    public void delete(UUID id) {
 
-    	Connection connection = ConnectionFactory.getConnection();
-    	var statement = connection.prepareStatement("DELETE FROM PRODUTO WHERE ID = ?");
+    	try(Connection connection = ConnectionFactory.getConnection()){
+            PreparedStatement statement = connection.prepareStatement(
+                    "DELETE FROM PRODUTO WHERE ID = ?");
 
-        try {
             connection.setAutoCommit(false);
             statement.setObject(1, id);
             statement.executeUpdate();
             connection.commit();
-        } catch (Exception e) {
-            connection.rollback();
-            throw e;
-        } finally {
-            connection.close();
+        }catch (Exception e) {
+            throw new RuntimeException(e);
         }
+
     }
 
-    public Produto findById(UUID id) throws Exception {
+    public Produto findById(UUID id) {
 
-        Connection connection = ConnectionFactory.getConnection();
-        var statement = connection.prepareStatement("SELECT * FROM PRODUTO WHERE ID = ?");
-        statement.setObject(1, id);
-        ResultSet resultSet = statement.executeQuery();
+        try (Connection connection = ConnectionFactory.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(
+                    "SELECT * FROM PRODUTO WHERE ID = ?");
+            statement.setObject(1, id);
+            ResultSet resultSet = statement.executeQuery();
 
-        Produto produto = null;
-        Categoria categoria = null;
+            Produto produto = null;
 
-        if (resultSet.next()) {
-            var categoriaRepository = new CategoriaRepository();
-            categoria = categoriaRepository.findById((UUID)resultSet.getObject("categoria_id"));
+            if (resultSet.next()) {
+                var categoriaRepository = new CategoriaRepository();
+                Categoria categoria = categoriaRepository.findById((UUID) resultSet.getObject("categoria_id"));
 
-            produto = new Produto();
-            produto.setId((UUID)resultSet.getObject("id"));
-            produto.setNome(resultSet.getString("nome"));
-            produto.setPreco(resultSet.getDouble("preco"));
-            produto.setQuantidade(resultSet.getInt("quantidade"));
-            produto.setCategoria(categoria);
+                produto = new Produto();
+                produto.setId((UUID) resultSet.getObject("id"));
+                produto.setNome(resultSet.getString("nome"));
+                produto.setPreco(resultSet.getDouble("preco"));
+                produto.setQuantidade(resultSet.getInt("quantidade"));
+                produto.setCategoria(categoria);
+            }
+            return produto;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        connection.close();
-
-        return produto;
     }
 
 }

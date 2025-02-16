@@ -20,8 +20,7 @@ public class ProdutoRequestDto {
 	@Min(value = 0, message = "Por favor informe a quantidade maior ou igual a zero")
 	@NotNull(message = "Por favor, informe a quantidade do produto")
 	private Integer quantidade;
-	
-	
+
 	@NotNull(message = "Por favor, informe a categoria do produto")
 	private UUID categoriaId;
 }

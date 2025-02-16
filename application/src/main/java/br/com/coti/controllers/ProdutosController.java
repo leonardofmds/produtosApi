@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +43,7 @@ public class ProdutosController {
 
 		try {
 			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))){
-				return ResponseEntity.status(404).body("Categoria não encontrada, verifique o ID informado");
+				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Categoria não encontrada, verifique o ID informado");
 			}
 
 			var produto = mapper.map(request, Produto.class);
@@ -52,8 +53,7 @@ public class ProdutosController {
 
 			return ResponseEntity.created(new URI("")).body("Produto cadastrado com sucesso.");
 		} catch (Exception e) {
-			log.error("Erro ao cadastrar o produto: " + e.getMessage());
-			// Não se responde com a exceção, pois a mensagem pode conter informações sensíveis
+            log.error("Erro ao cadastrar o produto: {}", e.getMessage());
 			return ResponseEntity.internalServerError().body("Erro ao cadastrar o produto: " + e.getMessage());
 		}
 	}
@@ -62,10 +62,9 @@ public class ProdutosController {
 	@PutMapping("/atualizar/{id}")
 	public ResponseEntity<String> atualizarProduto(@RequestBody @Valid ProdutoRequestDto request, @PathVariable UUID id) {
 
-
 		try {
 			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))){
-				return ResponseEntity.status(404).body("Categoria não encontrada, verifique o ID informado");
+				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Categoria não encontrada, verifique o ID informado");
 			}
 			var produto = mapper.map(request, Produto.class);
 			produto.setId(id);
@@ -87,7 +86,7 @@ public class ProdutosController {
 
 		try {
 			if(Objects.isNull(produtoRepository.findById(id))){
-				return ResponseEntity.status(404).body("Produto não encontrado, favor verificar o ID do produto");
+				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Produto não encontrado, favor verificar o ID do produto");
 			}
 			produtoRepository.delete(id);
 			return ResponseEntity.ok("Produto excluído com sucesso.");
@@ -104,43 +103,27 @@ public class ProdutosController {
 	public ResponseEntity<?> consultarProdutos() {
 		var produtoRepository = new ProdutoRepository();
 
-		try {
-			var produtos = produtoRepository.findAll();
-			if(!produtos.isEmpty()){
+		var produtos = produtoRepository.findAll();
+		List<ProdutoResponseDto> response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
+		return ResponseEntity.ok(response);
 
-				List<ProdutoResponseDto> response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
 
-				//List<Character> characters = modelMapper.map(integers, new TypeToken<List<Character>>() {}.getType());
-
-				return ResponseEntity.ok(response);
-			}
-			else {
-				return ResponseEntity.status(404).body("Nenhum produto encontrado");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			return ResponseEntity.internalServerError().body("Erro ao consultar os produtos: " + e.getMessage());
-		}
 	}
 
 	@Operation(summary = "Serviço para consultar um produto pelo id")
 	@GetMapping("/consultar/{id}")
 	public ResponseEntity<?> consultarProduto(@PathVariable UUID id) {
-		var produtoRepository = new ProdutoRepository();
-		ProdutoResponseDto response;
 
-		try {
-			var produto = produtoRepository.findById(id);
-			if(produto!=null) {
-				response = mapper.map(produto, ProdutoResponseDto.class);
-				return ResponseEntity.status(200).body(response);
-			}
-			else {
-				return ResponseEntity.status(404).body("Produto não encontrado, verifique o ID do produto");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage());
-			return ResponseEntity.internalServerError().body("Erro ao consultar produto: " + e.getMessage());
+		ProdutoRepository produtoRepository = new ProdutoRepository();
+
+		Produto produto = produtoRepository.findById(id);
+
+		if(produto == null){
+			return ResponseEntity.noContent().build();
 		}
+		ProdutoResponseDto response = mapper.map(produto, ProdutoResponseDto.class);
+		return ResponseEntity.ok(response);
+
+
 	}
 }
