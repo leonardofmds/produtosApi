@@ -58,3 +58,7 @@ Thumbs.db
 
 *target
 /.metadata/
+**/.settings
+**/bin
+**/.classpath
+**/.project
