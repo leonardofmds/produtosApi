@@ -3,6 +3,7 @@ package br.com.coti.repositories;
 import br.com.coti.entities.Categoria;
 import br.com.coti.entities.Produto;
 import br.com.coti.factories.ConnectionFactory;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
