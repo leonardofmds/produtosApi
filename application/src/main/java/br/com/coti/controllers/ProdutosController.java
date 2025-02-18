@@ -1,5 +1,6 @@
 package br.com.coti.controllers;
 
+import br.com.coti.dtos.ApiResponseDto;
 import br.com.coti.dtos.ProdutoRequestDto;
 import br.com.coti.dtos.ProdutoResponseDto;
 import br.com.coti.entities.Produto;
@@ -16,7 +17,6 @@ import org.modelmapper.TypeToken;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -40,22 +40,35 @@ public class ProdutosController {
 	@PostMapping("/cadastrar")
 	public ResponseEntity<?> cadastrarProduto(@RequestBody @Valid ProdutoRequestDto request) {
 
+		var response = new ApiResponseDto();
+
 		try {
-			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))){
-				return ResponseEntity.status(404).body("Categoria não encontrada, verifique o ID informado");
+			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))) {
+				//return ResponseEntity.status(404).body("Categoria não encontrada, verifique o ID informado");
+				response.setMessage("Categoria náo encontrada, verifique o ID informado");
+			}
+			else{
+				var produto = mapper.map(request, Produto.class);
+				produto.setId(UUID.randomUUID());
+
+				var produtoRepository = new ProdutoRepository();
+				produtoRepository.create(produto, request.getCategoriaId());
+
+				response.setMessage("Produto cadastrado com sucesso");
+				response.setId(produto.getId());
+				response.setStatusCode(201);
+				//return ResponseEntity.created(new URI("")).body("Produto cadastrado com sucesso.");
 			}
 
-			var produto = mapper.map(request, Produto.class);
 
-			var produtoRepository = new ProdutoRepository();
-			produtoRepository.create(produto, request.getCategoriaId());
-
-			return ResponseEntity.created(new URI("")).body("Produto cadastrado com sucesso.");
 		} catch (Exception e) {
-			log.error("Erro ao cadastrar o produto: " + e.getMessage());
+			log.error("Erro ao cadastrar o produto: {}", e.getMessage());
 			// Não se responde com a exceção, pois a mensagem pode conter informações sensíveis
-			return ResponseEntity.internalServerError().body("Erro ao cadastrar o produto: " + e.getMessage());
+			//return ResponseEntity.internalServerError().body("Erro ao cadastrar o produto: " + e.getMessage());
+			response.setMessage("Erro ao cadastrar o produto: ");
+			response.setStatusCode(500);
 		}
+		return ResponseEntity.status(response.getStatusCode()).body(response);
 	}
 
 	@Operation(summary = "Serviço para atualizar um produto")
