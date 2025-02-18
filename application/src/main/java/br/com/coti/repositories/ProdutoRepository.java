@@ -43,7 +43,7 @@ public class ProdutoRepository {
     public void create(Produto produto, UUID categoriaId) throws Exception {
 
     	Connection connection = ConnectionFactory.getConnection();
-    	var statement = connection.prepareStatement("INSERT INTO PRODUTO(NOME,PRECO,QUANTIDADE,CATEGORIA_ID) VALUES(?, ?, ?, ?)");
+    	var statement = connection.prepareStatement("INSERT INTO PRODUTO(NOME,PRECO,QUANTIDADE,CATEGORIA_ID, ID) VALUES(?, ?, ?, ?, ?)");
 
         try {
             connection.setAutoCommit(false);
@@ -51,6 +51,7 @@ public class ProdutoRepository {
             statement.setDouble(2, produto.getPreco());
             statement.setInt(3, produto.getQuantidade());
             statement.setObject(4, categoriaId);
+            statement.setObject(5, produto.getId());
             statement.executeUpdate();
             connection.commit();
         } catch (Exception e) {
