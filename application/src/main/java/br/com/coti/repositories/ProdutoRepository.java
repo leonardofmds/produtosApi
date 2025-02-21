@@ -3,6 +3,7 @@ package br.com.coti.repositories;
 import br.com.coti.entities.Categoria;
 import br.com.coti.entities.Produto;
 import br.com.coti.factories.ConnectionFactory;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Component
 public class ProdutoRepository {
 
     public List<Produto> findAll() throws Exception {
@@ -18,6 +20,34 @@ public class ProdutoRepository {
         Connection connection = ConnectionFactory.getConnection();
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PRODUTO");
+        var categoriaRepository = new CategoriaRepository();
+
+        var produtos = new ArrayList<Produto>();
+
+        while (resultSet.next()) {
+            Categoria categoria = categoriaRepository.findById((UUID)resultSet.getObject("categoria_id"));
+            Produto produto = new Produto();
+            produto.setId((UUID)resultSet.getObject("id"));
+            produto.setId(UUID.fromString(resultSet.getString("id")));
+            produto.setNome(resultSet.getString("nome"));
+            produto.setPreco(resultSet.getDouble("preco"));
+            produto.setQuantidade(resultSet.getInt("quantidade"));
+            produto.setCategoria(categoria);
+
+            produtos.add(produto);
+        }
+
+        connection.close();
+
+        return produtos;
+    }
+
+    public List<Produto> findAll(String nome) throws Exception {
+
+        Connection connection = ConnectionFactory.getConnection();
+        var statement = connection.prepareStatement("SELECT * FROM PRODUTO WHERE nome ILIKE ? ORDER BY NOME");
+        statement.setString(1,"%"+nome+"%");
+        ResultSet resultSet = statement.executeQuery();
         var categoriaRepository = new CategoriaRepository();
 
         var produtos = new ArrayList<Produto>();

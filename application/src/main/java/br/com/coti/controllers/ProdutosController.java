@@ -31,9 +31,11 @@ public class ProdutosController {
 
 	ModelMapper mapper = new ModelMapper();
 	private final CategoriaRepository categoriaRepository;
+	private final ProdutoRepository produtoRepository;
 
-	public ProdutosController(CategoriaRepository categoriaRepository) {
+	public ProdutosController(CategoriaRepository categoriaRepository, ProdutoRepository produtoRepository) {
 		this.categoriaRepository = categoriaRepository;
+		this.produtoRepository = produtoRepository;
 	}
 
 	@Operation(summary = "Serviço para cadastrar um novo produto")
@@ -51,7 +53,6 @@ public class ProdutosController {
 				var produto = mapper.map(request, Produto.class);
 				produto.setId(UUID.randomUUID());
 
-				var produtoRepository = new ProdutoRepository();
 				produtoRepository.create(produto, request.getCategoriaId());
 
 				response.setMessage("Produto cadastrado com sucesso");
@@ -73,41 +74,58 @@ public class ProdutosController {
 
 	@Operation(summary = "Serviço para atualizar um produto")
 	@PutMapping("/atualizar/{id}")
-	public ResponseEntity<String> atualizarProduto(@RequestBody @Valid ProdutoRequestDto request, @PathVariable UUID id) {
+	public ResponseEntity<?> atualizarProduto(@RequestBody @Valid ProdutoRequestDto request, @PathVariable UUID id) {
 
+		var response = new ApiResponseDto();
 
 		try {
 			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))){
-				return ResponseEntity.status(404).body("Categoria não encontrada, verifique o ID informado");
+				response.setMessage("Categoria não encontrada, verifique o ID informado");
+				response.setStatusCode(404);
 			}
-			var produto = mapper.map(request, Produto.class);
-			produto.setId(id);
+			else if(Objects.isNull(produtoRepository.findById(id))) {
+				response.setMessage("Produto não encontrado, verifique o ID informado");
+				response.setStatusCode(404);
+			}
+			else {
+				var produto = mapper.map(request, Produto.class);
+				produto.setId(id);
 
-			var produtoRepository = new ProdutoRepository();
-			produtoRepository.update(produto);
+				produtoRepository.update(produto);
 
-			return ResponseEntity.ok("Produto atualizado com sucesso.");
+				response.setMessage("Produto atualizado com sucesso.");
+				response.setStatusCode(200);
+				response.setId(produto.getId());
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
-			return ResponseEntity.internalServerError().body("Erro ao atualizar produto: " + e.getMessage());
+			response.setMessage("Erro ao atualizar produto: " + e.getMessage());
+			response.setStatusCode(500);
 		}
+		return ResponseEntity.status(response.getStatusCode()).body(response);
 	}
 
 	@Operation(summary = "Serviço para excluir um produto")
-	@DeleteMapping("/excluir")
-	public ResponseEntity<String> excluirProduto(@RequestParam UUID id) {
-		var produtoRepository = new ProdutoRepository();
+	@DeleteMapping("/excluir/{id}")
+	public ResponseEntity<?> excluirProduto(@PathVariable UUID id) {
+		var response = new ApiResponseDto();
 
 		try {
 			if(Objects.isNull(produtoRepository.findById(id))){
-				return ResponseEntity.status(404).body("Produto não encontrado, favor verificar o ID do produto");
+				response.setMessage("Produto não encontrado, favor verificar o ID do produto");
+				response.setStatusCode(404);
 			}
-			produtoRepository.delete(id);
-			return ResponseEntity.ok("Produto excluído com sucesso.");
+			else {
+				produtoRepository.delete(id);
+				response.setMessage("Produto excluído com sucesso.");
+				response.setStatusCode(200);
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
-			return ResponseEntity.internalServerError().body("Erro ao excluir produto: " + e.getMessage());
+			response.setMessage("Erro ao excluir produto: " + e.getMessage());
+			response.setStatusCode(500);
 		}
+		return ResponseEntity.status(response.getStatusCode()).body(response.getMessage());
 	}
 
 	@Operation(summary = "Serviço para consultar todos os produtos")
@@ -115,16 +133,34 @@ public class ProdutosController {
 	@ApiResponse(responseCode = "200", description = "Sucesso",
 			content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProdutoResponseDto.class)))
 	public ResponseEntity<?> consultarProdutos() {
-		var produtoRepository = new ProdutoRepository();
 
 		try {
 			var produtos = produtoRepository.findAll();
 			if(!produtos.isEmpty()){
 
 				List<ProdutoResponseDto> response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
+				return ResponseEntity.ok(response);
+			}
+			else {
+				return ResponseEntity.status(404).body("Nenhum produto encontrado");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			return ResponseEntity.internalServerError().body("Erro ao consultar os produtos: " + e.getMessage());
+		}
+	}
 
-				//List<Character> characters = modelMapper.map(integers, new TypeToken<List<Character>>() {}.getType());
+	@Operation(summary = "Serviço para consultar todos os produtos")
+	@GetMapping("/consultarPorNome/{nome}")
+	@ApiResponse(responseCode = "200", description = "Sucesso",
+			content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProdutoResponseDto.class)))
+	public ResponseEntity<?> consultarProdutos(@PathVariable String nome) {
 
+		try {
+			var produtos = produtoRepository.findAll(nome);
+			if(!produtos.isEmpty()){
+
+				List<ProdutoResponseDto> response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
 				return ResponseEntity.ok(response);
 			}
 			else {
@@ -139,7 +175,6 @@ public class ProdutosController {
 	@Operation(summary = "Serviço para consultar um produto pelo id")
 	@GetMapping("/consultar/{id}")
 	public ResponseEntity<?> consultarProduto(@PathVariable UUID id) {
-		var produtoRepository = new ProdutoRepository();
 		ProdutoResponseDto response;
 
 		try {
