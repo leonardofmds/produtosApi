@@ -39,8 +39,9 @@ public class CategoriaRepository {
 	public Categoria findById(UUID id) throws Exception {
 
 		Connection connection = ConnectionFactory.getConnection();
-		Statement statement = connection.createStatement();
-		ResultSet resultSet = statement.executeQuery("SELECT * FROM CATEGORIA WHERE ID = '" + id.toString() + "'");
+		var statement = connection.prepareStatement("SELECT * FROM CATEGORIA WHERE ID = ?");
+		statement.setObject(1, id);
+		ResultSet resultSet = statement.executeQuery();
 
 		Categoria categoria = null;
 
