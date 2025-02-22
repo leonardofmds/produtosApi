@@ -4,6 +4,7 @@ import br.com.coti.entities.Categoria;
 import br.com.coti.entities.Produto;
 import br.com.coti.factories.ConnectionFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Component
 public class ProdutoRepository {
 
     public List<Produto> findAll(){
@@ -43,17 +45,46 @@ public class ProdutoRepository {
         }
     }
 
+    public List<Produto> findAll(String nome) throws Exception {
+
+        Connection connection = ConnectionFactory.getConnection();
+        var statement = connection.prepareStatement("SELECT * FROM PRODUTO WHERE nome ILIKE ? ORDER BY NOME");
+        statement.setString(1,"%"+nome+"%");
+        ResultSet resultSet = statement.executeQuery();
+        var categoriaRepository = new CategoriaRepository();
+
+        var produtos = new ArrayList<Produto>();
+
+        while (resultSet.next()) {
+            Categoria categoria = categoriaRepository.findById((UUID)resultSet.getObject("categoria_id"));
+            Produto produto = new Produto();
+            produto.setId((UUID)resultSet.getObject("id"));
+            produto.setId(UUID.fromString(resultSet.getString("id")));
+            produto.setNome(resultSet.getString("nome"));
+            produto.setPreco(resultSet.getDouble("preco"));
+            produto.setQuantidade(resultSet.getInt("quantidade"));
+            produto.setCategoria(categoria);
+
+            produtos.add(produto);
+        }
+
+        connection.close();
+
+        return produtos;
+    }
+
     public void create(Produto produto, UUID categoriaId) throws Exception {
 
         try(Connection connection = ConnectionFactory.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
-                    "INSERT INTO PRODUTO(NOME,PRECO,QUANTIDADE,CATEGORIA_ID) VALUES(?, ?, ?, ?)");
+                    "INSERT INTO PRODUTO(NOME,PRECO,QUANTIDADE,CATEGORIA_ID, ID) VALUES(?, ?, ?, ?, ?)");
 
             connection.setAutoCommit(false);
             statement.setString(1, produto.getNome());
             statement.setDouble(2, produto.getPreco());
             statement.setInt(3, produto.getQuantidade());
             statement.setObject(4, categoriaId);
+            statement.setObject(5, produto.getId());
             statement.executeUpdate();
             connection.commit();
         }

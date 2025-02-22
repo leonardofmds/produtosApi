@@ -41,12 +41,14 @@ public class CategoriaRepository {
         }
     }
 
+    // TODO remove throws
+	public Categoria findById(UUID id) throws Exception {
 
-	public Categoria findById(UUID id) {
-
-		try(Connection connection = ConnectionFactory.getConnection();
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM CATEGORIA WHERE ID = '" + id.toString() + "'")) {
+        // TODO try with resources
+		Connection connection = ConnectionFactory.getConnection();
+		var statement = connection.prepareStatement("SELECT * FROM CATEGORIA WHERE ID = ?");
+		statement.setObject(1, id);
+		ResultSet resultSet = statement.executeQuery();
 
 			Categoria categoria = null;
 
