@@ -3,8 +3,8 @@ package br.com.coti.repositories;
 import br.com.coti.entities.Categoria;
 import br.com.coti.entities.Produto;
 import br.com.coti.factories.ConnectionFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Component
+@Slf4j
+@Repository
 public class ProdutoRepository {
 
     public List<Produto> findAll(){
@@ -45,35 +46,40 @@ public class ProdutoRepository {
         }
     }
 
-    public List<Produto> findAll(String nome) throws Exception {
+    public List<Produto> findAll(String nome) {
 
-        Connection connection = ConnectionFactory.getConnection();
-        var statement = connection.prepareStatement("SELECT * FROM PRODUTO WHERE nome ILIKE ? ORDER BY NOME");
+        try(Connection connection = ConnectionFactory.getConnection();
+        var statement = connection.prepareStatement("SELECT * FROM PRODUTO WHERE nome ILIKE ? ORDER BY NOME")) {
+
         statement.setString(1,"%"+nome+"%");
         ResultSet resultSet = statement.executeQuery();
-        var categoriaRepository = new CategoriaRepository();
 
-        var produtos = new ArrayList<Produto>();
+            var categoriaRepository = new CategoriaRepository();
 
-        while (resultSet.next()) {
-            Categoria categoria = categoriaRepository.findById((UUID)resultSet.getObject("categoria_id"));
-            Produto produto = new Produto();
-            produto.setId((UUID)resultSet.getObject("id"));
-            produto.setId(UUID.fromString(resultSet.getString("id")));
-            produto.setNome(resultSet.getString("nome"));
-            produto.setPreco(resultSet.getDouble("preco"));
-            produto.setQuantidade(resultSet.getInt("quantidade"));
-            produto.setCategoria(categoria);
+            var produtos = new ArrayList<Produto>();
 
-            produtos.add(produto);
+            while (resultSet.next()) {
+                Categoria categoria = categoriaRepository.findById((UUID) resultSet.getObject("categoria_id"));
+                Produto produto = new Produto();
+                produto.setId((UUID) resultSet.getObject("id"));
+                produto.setId(UUID.fromString(resultSet.getString("id")));
+                produto.setNome(resultSet.getString("nome"));
+                produto.setPreco(resultSet.getDouble("preco"));
+                produto.setQuantidade(resultSet.getInt("quantidade"));
+                produto.setCategoria(categoria);
+
+                produtos.add(produto);
+            }
+
+            return produtos;
+        } catch (Exception e) {
+            log.error("Erro ao consultar os produtos: {}", e.getMessage());
+            return List.of();
         }
-
-        connection.close();
-
-        return produtos;
     }
 
-    public void create(Produto produto, UUID categoriaId) throws Exception {
+    public void create(Produto produto) {
+
 
         try(Connection connection = ConnectionFactory.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
@@ -83,14 +89,16 @@ public class ProdutoRepository {
             statement.setString(1, produto.getNome());
             statement.setDouble(2, produto.getPreco());
             statement.setInt(3, produto.getQuantidade());
-            statement.setObject(4, categoriaId);
-            statement.setObject(5, produto.getId());
+            statement.setObject(4, produto.getCategoria().getId());
+            statement.setObject(5, UUID.randomUUID());
             statement.executeUpdate();
             connection.commit();
+        } catch (Exception e) {
+            log.error("Erro ao cadastrar o produto: {}", e.getMessage());
         }
     }
 
-    public void update(Produto produto) throws Exception {
+    public void update(Produto produto) {
 
     	try(Connection connection = ConnectionFactory.getConnection()){
             PreparedStatement statement = connection.prepareStatement(
@@ -103,6 +111,8 @@ public class ProdutoRepository {
             statement.setObject(5, produto.getId());
             statement.executeUpdate();
             connection.commit();
+        } catch (Exception e) {
+            log.error("Erro ao atualizar o produto: {}", e.getMessage());
         }
     }
 
@@ -117,7 +127,7 @@ public class ProdutoRepository {
             statement.executeUpdate();
             connection.commit();
         }catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Erro ao excluir o produto: {}", e.getMessage());
         }
 
     }
@@ -145,8 +155,9 @@ public class ProdutoRepository {
             }
             return produto;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Erro ao consultar o produto: {}", e.getMessage());
         }
+        return null;
     }
 
 }

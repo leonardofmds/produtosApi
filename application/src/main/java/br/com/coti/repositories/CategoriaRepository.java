@@ -3,7 +3,7 @@ package br.com.coti.repositories;
 import br.com.coti.entities.Categoria;
 import br.com.coti.factories.ConnectionFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@Component
+@Repository
 public class CategoriaRepository {
 	
 	public List<Categoria> findAll() {
@@ -27,7 +27,6 @@ public class CategoriaRepository {
 			while (resultSet.next()) {
 
 				Categoria categoria = new Categoria();
-				categoria.setId((UUID)resultSet.getObject("id"));
 				categoria.setId(UUID.fromString(resultSet.getString("id")));
 				categoria.setNome(resultSet.getString("nome"));
 
@@ -41,26 +40,27 @@ public class CategoriaRepository {
         }
     }
 
-    // TODO remove throws
-	public Categoria findById(UUID id) throws Exception {
+	public Categoria findById(UUID id) {
 
-        // TODO try with resources
-		Connection connection = ConnectionFactory.getConnection();
-		var statement = connection.prepareStatement("SELECT * FROM CATEGORIA WHERE ID = ?");
-		statement.setObject(1, id);
-		ResultSet resultSet = statement.executeQuery();
+		try(Connection connection = ConnectionFactory.getConnection();
+		var statement = connection.prepareStatement("SELECT * FROM CATEGORIA WHERE ID = ?")) {
 
-			Categoria categoria = null;
+			statement.setObject(1, id);
+            Categoria categoria;
 
-			if(resultSet.next()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                categoria = null;
 
-				categoria = new Categoria();
-				categoria.setId((UUID)resultSet.getObject("id"));
-				categoria.setId(UUID.fromString(resultSet.getString("id")));
-				categoria.setNome(resultSet.getString("nome"));
-			}
+                if (resultSet.next()) {
 
-			return categoria;
+                    categoria = new Categoria();
+                    categoria.setId((UUID) resultSet.getObject("id"));
+                    categoria.setId(UUID.fromString(resultSet.getString("id")));
+                    categoria.setNome(resultSet.getString("nome"));
+                }
+            }
+
+            return categoria;
 		}  catch (Exception e) {
             log.error("Erro ao consultar a categoria: {}", e.getMessage());
 			return null;
