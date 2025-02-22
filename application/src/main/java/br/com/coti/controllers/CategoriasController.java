@@ -35,17 +35,13 @@ public class CategoriasController {
 			var categorias =  repository.findAll();			
 			var response = new ArrayList<CategoriaResponseDto>();
 
-			if(categorias.isEmpty()) {
-				return ResponseEntity.noContent().build();
-			}
-
 			for (var categoria : categorias) { 
 				response.add(mapper.map(categoria, CategoriaResponseDto.class));
 			}
 
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
-			log.error("Erro ao consultar as categorias: " + e.getMessage());
+            log.error("Erro ao consultar as categorias: {}", e.getMessage());
 			return ResponseEntity.badRequest().body("Erro ao consultar as categorias.");
 		}
 	}

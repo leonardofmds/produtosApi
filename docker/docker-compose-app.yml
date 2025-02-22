@@ -13,5 +13,17 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  app:
+    image: local/br-com-coti/produtos-api:1.0.0  # Use the Jib-built image
+    container_name: produtosapi_app
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: senha123
+    restart: always
+
 volumes:
   postgres_data:

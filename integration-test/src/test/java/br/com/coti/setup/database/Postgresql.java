@@ -33,17 +33,15 @@ public class Postgresql {
                 ));
 
         postgres.start();
+
         addCategories();
-
-
 
     }
 
     public  void addCategories() {
 
 
-        try {
-            Connection connection = ConnectionFactory.getConnection();
+        try (Connection connection = ConnectionFactory.getConnection()) {
 
             Statement statement = connection.createStatement();
 
@@ -55,15 +53,10 @@ public class Postgresql {
             statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  UUID.randomUUID()  + "', 'OUTROS')");
             statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  UUID.randomUUID()  + "', 'VESTUARIO')");
             statement.executeUpdate("INSERT INTO CATEGORIA(ID,NOME) VALUES('" +  UUID.randomUUID()  + "', 'PAPELARIA')");
-
-
-
-            connection.close();
             log.info("Categories inserted");
 
-
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Error inserting categories: {}", e.getMessage());
         }
     }
 
@@ -71,8 +64,7 @@ public class Postgresql {
 
     private void createTables(Connection connection) {
         log.info("Creating tables");
-        try {
-            Statement statement = connection.createStatement();
+        try (Statement statement = connection.createStatement()) {
             String createCategoryTableSQL = "CREATE TABLE IF NOT EXISTS CATEGORIA (" +
                     "ID UUID PRIMARY KEY, " +
                     "NOME VARCHAR(255) NOT NULL)";
@@ -91,7 +83,7 @@ public class Postgresql {
 
             statement.executeUpdate(createProductTableSQL);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Error creating tables: {}", e.getMessage());
         }
         log.info(" Table created");
     }

@@ -1,5 +1,7 @@
 package br.com.coti;
 
+import br.com.coti.dtos.ProdutoRequestDto;
+import br.com.coti.dtos.ProdutoResponseDto;
 import br.com.coti.entities.Categoria;
 import br.com.coti.entities.Produto;
 import io.restassured.RestAssured;
@@ -33,7 +35,8 @@ public class ProductIT {
         RestAssured.given()
                 .get(BASE_URL + "/consultar")
                 .then()
-                .statusCode(HttpStatus.SC_NO_CONTENT);
+                .statusCode(HttpStatus.SC_OK)
+                .body("size()", equalTo(0));
 
     }
 
@@ -51,37 +54,43 @@ public class ProductIT {
                 .body(payload)
                 .post(BASE_URL + "/cadastrar")
                 .then()
-                .contentType(ContentType.TEXT)
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(equalTo("Erro ao cadastrar o produto."));
+                .body("error", equalTo("Bad Request"));
 
     }
 
     @Test
     @Order(3)
-    public void givenWorkingProductThenReturnProductCreated() {
+    public void givenProductThenSuccess() {
 
     List<Categoria> categories = RestAssured.get("http://localhost:" + port + "/api/categorias/consultar")
-        .then()
-        .statusCode(HttpStatus.SC_OK)
-        .extract()
-        .jsonPath()
-        .getList(".", Categoria.class);
+            .then()
+            .statusCode(HttpStatus.SC_OK)
+            .body("size()", equalTo(5))
+            .extract()
+            .jsonPath()
+            .getList(".", Categoria.class);
 
-        Produto payload = new Produto();
-        payload.setNome("Resma de papel");
+
+        Categoria papelaria =
+                categories.stream().filter(c -> "PAPELARIA".equals(c.getNome())).findFirst().orElse(null);
+        Assertions.assertNotNull(papelaria);
+
+        ProdutoRequestDto payload = new ProdutoRequestDto();
+
+        String caderno = "Caderno abc";
+        payload.setNome(caderno);
         payload.setPreco(10.0);
         payload.setQuantidade(10);
-        payload.setCategoria(categories.getFirst());
+        payload.setCategoriaId(papelaria.getId());
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .post(BASE_URL + "/cadastrar")
                 .then()
-                .contentType(ContentType.TEXT)
                 .statusCode(HttpStatus.SC_CREATED)
-                .body(equalTo("Produto cadastrado com sucesso."));
+                .body("message", equalTo("Produto cadastrado com sucesso"));
 
 
         RestAssured.given()
@@ -90,7 +99,70 @@ public class ProductIT {
                 .contentType(ContentType.JSON)
                 .statusCode(HttpStatus.SC_OK)
                 .body("size()", equalTo(1))
-                .body("find { it.nome == 'Resma de papel' }.nome", equalTo("Resma de papel"));
+                .body("find { it.nome == 'Caderno abc' }.nome", equalTo(caderno));
+
+    }
+
+    @Test
+    @Order(4)
+    public void givenProductThenDeleteIt() {
+
+        List<Categoria> categories = RestAssured.get("http://localhost:" + port + "/api/categorias/consultar")
+                .then()
+                .statusCode(HttpStatus.SC_OK)
+                .body("size()", equalTo(5))
+                .extract()
+                .jsonPath()
+                .getList(".", Categoria.class);
+
+
+        Categoria papelaria =
+                categories.stream().filter(c -> "PAPELARIA".equals(c.getNome())).findFirst().orElse(null);
+        Assertions.assertNotNull(papelaria);
+
+        ProdutoRequestDto payload = new ProdutoRequestDto();
+        payload.setNome("Resma de papel");
+        payload.setPreco(10.0);
+        payload.setQuantidade(10);
+
+        payload.setCategoriaId(papelaria.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(payload)
+                .post(BASE_URL + "/cadastrar")
+                .then()
+                .statusCode(HttpStatus.SC_CREATED)
+                .body("message", equalTo("Produto cadastrado com sucesso"));
+
+
+        ProdutoResponseDto product = RestAssured.given()
+                .get(BASE_URL + "/consultar")
+                .then()
+                .contentType(ContentType.JSON)
+                .statusCode(HttpStatus.SC_OK)
+                .body("size()", equalTo(2))
+                .extract()
+                .jsonPath()
+                .getList(".", ProdutoResponseDto.class)
+                .getFirst();
+
+
+        RestAssured
+                .given()
+                .delete(BASE_URL + "/excluir/" + product.getId())
+                .then()
+                .statusCode(HttpStatus.SC_OK)
+                .body(equalTo("Produto excluído com sucesso."));
+
+
+        System.out.println(BASE_URL + "/consultar" + "/" + product.getId());
+        RestAssured
+                .given()
+                .get(BASE_URL + "/consultar" + "/" + product.getId())
+                .then()
+                .statusCode(HttpStatus.SC_NO_CONTENT);
+
 
     }
 }

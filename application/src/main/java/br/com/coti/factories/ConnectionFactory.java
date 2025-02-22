@@ -13,8 +13,21 @@ public class ConnectionFactory {
 		var host = "jdbc:postgresql://localhost:5432/bd_produtosapi";
 		var user = "admin";
 		var pass = "senha123";
-		
-		return DriverManager.getConnection(host,user,pass);
+
+		Connection connection;
+
+		try {
+			connection = DriverManager.getConnection(host, user, pass);
+		}catch (Exception e) {
+			//Tactical solution to run on docker
+			// TODO make the vars configurable by environment variable
+			host = "jdbc:postgresql://postgres:5432/bd_produtosapi";
+			connection = DriverManager.getConnection(host, user, pass);
+
+		}
+
+		return  connection;
+
 	}
 	
 }
