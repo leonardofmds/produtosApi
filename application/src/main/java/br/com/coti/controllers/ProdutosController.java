@@ -14,9 +14,11 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -48,6 +50,7 @@ public class ProdutosController {
 			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))) {
 				//return ResponseEntity.status(404).body("Categoria não encontrada, verifique o ID informado");
 				response.setMessage("Categoria náo encontrada, verifique o ID informado");
+				response.setStatusCode(400);
 			}
 			else{
 				var produto = mapper.map(request, Produto.class);
@@ -81,11 +84,11 @@ public class ProdutosController {
 		try {
 			if(Objects.isNull(categoriaRepository.findById(request.getCategoriaId()))){
 				response.setMessage("Categoria não encontrada, verifique o ID informado");
-				response.setStatusCode(404);
+				response.setStatusCode(400);
 			}
 			else if(Objects.isNull(produtoRepository.findById(id))) {
 				response.setMessage("Produto não encontrado, verifique o ID informado");
-				response.setStatusCode(404);
+				response.setStatusCode(400);
 			}
 			else {
 				var produto = mapper.map(request, Produto.class);
@@ -113,7 +116,7 @@ public class ProdutosController {
 		try {
 			if(Objects.isNull(produtoRepository.findById(id))){
 				response.setMessage("Produto não encontrado, favor verificar o ID do produto");
-				response.setStatusCode(404);
+				response.setStatusCode(400);
 			}
 			else {
 				produtoRepository.delete(id);
@@ -134,61 +137,59 @@ public class ProdutosController {
 			content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProdutoResponseDto.class)))
 	public ResponseEntity<?> consultarProdutos() {
 
+		var response = new ArrayList<ProdutoResponseDto>();
+
 		try {
 			var produtos = produtoRepository.findAll();
 			if(!produtos.isEmpty()){
-
-				List<ProdutoResponseDto> response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
-				return ResponseEntity.ok(response);
-			}
-			else {
-				return ResponseEntity.status(404).body("Nenhum produto encontrado");
+				response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			return ResponseEntity.internalServerError().body("Erro ao consultar os produtos: " + e.getMessage());
 		}
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
-	@Operation(summary = "Serviço para consultar todos os produtos")
+	@Operation(summary = "Serviço para consultar produtos pelo nome")
 	@GetMapping("/consultarPorNome/{nome}")
 	@ApiResponse(responseCode = "200", description = "Sucesso",
 			content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProdutoResponseDto.class)))
 	public ResponseEntity<?> consultarProdutos(@PathVariable String nome) {
 
+		var response = new ArrayList<ProdutoResponseDto>();
+
 		try {
 			var produtos = produtoRepository.findAll(nome);
 			if(!produtos.isEmpty()){
-
-				List<ProdutoResponseDto> response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
-				return ResponseEntity.ok(response);
-			}
-			else {
-				return ResponseEntity.status(404).body("Nenhum produto encontrado");
+				 response = mapper.map(produtos, new TypeToken<List<ProdutoResponseDto>>() {}.getType());
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			return ResponseEntity.internalServerError().body("Erro ao consultar os produtos: " + e.getMessage());
 		}
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 
 	@Operation(summary = "Serviço para consultar um produto pelo id")
-	@GetMapping("/consultar/{id}")
+	@GetMapping("/consultarPorId/{id}")
 	public ResponseEntity<?> consultarProduto(@PathVariable UUID id) {
 		ProdutoResponseDto response;
+
 
 		try {
 			var produto = produtoRepository.findById(id);
 			if(produto!=null) {
 				response = mapper.map(produto, ProdutoResponseDto.class);
-				return ResponseEntity.status(200).body(response);
 			}
 			else {
-				return ResponseEntity.status(404).body("Produto não encontrado, verifique o ID do produto");
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Produto não encontrado, verifique o ID informado");
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			return ResponseEntity.internalServerError().body("Erro ao consultar produto: " + e.getMessage());
 		}
+		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 }
+
