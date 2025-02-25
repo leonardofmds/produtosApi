@@ -15,12 +15,17 @@ import java.util.UUID;
 @Component
 public class ProdutoRepository {
 
+    private final CategoriaRepository categoriaRepository;
+
+    public ProdutoRepository(CategoriaRepository categoriaRepository) {
+        this.categoriaRepository = categoriaRepository;
+    }
+
     public List<Produto> findAll() throws Exception {
 
         Connection connection = ConnectionFactory.getConnection();
         Statement statement = connection.createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT * FROM PRODUTO");
-        var categoriaRepository = new CategoriaRepository();
 
         var produtos = new ArrayList<Produto>();
 
@@ -48,7 +53,6 @@ public class ProdutoRepository {
         var statement = connection.prepareStatement("SELECT * FROM PRODUTO WHERE nome ILIKE ? ORDER BY NOME");
         statement.setString(1,"%"+nome+"%");
         ResultSet resultSet = statement.executeQuery();
-        var categoriaRepository = new CategoriaRepository();
 
         var produtos = new ArrayList<Produto>();
 
