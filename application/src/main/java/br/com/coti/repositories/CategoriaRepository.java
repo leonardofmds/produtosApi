@@ -1,5 +1,6 @@
 package br.com.coti.repositories;
 
+import br.com.coti.dtos.CategoriaQtdProdutoResponseDto;
 import br.com.coti.entities.Categoria;
 import br.com.coti.factories.ConnectionFactory;
 import org.springframework.stereotype.Component;
@@ -56,6 +57,37 @@ public class CategoriaRepository {
 		connection.close();
 
 		return categoria;
+	}
+
+	public List<CategoriaQtdProdutoResponseDto> groupByQtdProdutos() throws Exception {
+
+		var query = """
+				select c.nome as nomecategoria,
+				       sum(p.quantidade) as qtdprodutos
+				from produto p
+				         inner join categoria c
+				                    on c.id = p.categoria_id
+				group by c.nome;
+				""";
+
+
+		Connection connection = ConnectionFactory.getConnection();
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery(query);
+
+		List<CategoriaQtdProdutoResponseDto> lista = new ArrayList<CategoriaQtdProdutoResponseDto>();
+
+		while (resultSet.next()) {
+
+			CategoriaQtdProdutoResponseDto dto = new CategoriaQtdProdutoResponseDto();
+			dto.setNomeCategoria(resultSet.getString("nomecategoria"));
+			dto.setQtdProdutos(resultSet.getInt("qtdprodutos"));
+
+			lista.add(dto);
+		}
+		connection.close();
+
+		return lista;
 	}
 
 }
