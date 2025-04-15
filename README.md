@@ -1,28 +1,43 @@
-# Getting Started
+# 🛍️ produtosApi
 
-### The project publish to GitHub Packages Apache Maven
+**produtosApi** é uma API REST desenvolvida com **Spring Boot** e **JDBC** para gerenciamento de produtos e categorias, com segurança baseada em **JWT (JSON Web Token)**. O projeto utiliza **PostgreSQL** como banco de dados relacional e está preparado para execução em ambientes com **Docker** via `docker-compose`.
 
+---
 
-### Reference Documentation
-For further reference, please consider the following sections:
+## 🚀 Tecnologias Utilizadas
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.2/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.2/maven-plugin/build-image.html)
-* [Spring Boot DevTools](https://docs.spring.io/spring-boot/3.4.2/reference/using/devtools.html)
-* [Spring Web](https://docs.spring.io/spring-boot/3.4.2/reference/web/servlet.html)
+- **Spring Boot** – Framework para criação de aplicações Java modernas e robustas.  
+  🔗 [Documentação](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/)
 
-### Guides
-The following guides illustrate how to use some features concretely:
+- **JDBC (Java Database Connectivity)** – API para acesso direto ao banco de dados relacional.  
+  🔗 [Documentação](https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/)
 
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
+- **PostgreSQL** – Banco de dados relacional de código aberto.  
+  🔗 [Documentação](https://www.postgresql.org/docs/)
 
-### Maven Parent overrides
+- **JWT (JSON Web Token)** – Autenticação segura via token.  
+  🔗 [Documentação](https://jwt.io/introduction)
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `<developers>` from the parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+- **Docker** – Contêinerização da aplicação para ambientes isolados.  
+  🔗 [Documentação](https://docs.docker.com/)
+
+- **docker-compose** – Orquestração de contêineres Docker para configurar o ambiente.  
+  🔗 [Documentação](https://docs.docker.com/compose/)
+
+---
+
+## 📑 Endpoints da API
+
+| Rota             	   				    		| Método | Descrição                                 | Autenticação |
+|-----------------------------------------------|--------|-------------------------------------------|--------------|
+| `/api/categorias/consultar`		    	    | GET    | Consulta lista de categorias              | ✅ JWT       |
+| `/api/produtos/consultar`  		    		| GET    | Lista todos os produtos                   | ✅ JWT       |
+| `/api/produtos/consultarPorNome`      		| GET    | Consultar produtos pelo nome       		 | ✅ JWT       |
+| `/api/produtos/consultarPorId/{id}`   		| GET    | Consultar produtos pelo nome       		 | ✅ JWT       |
+| `/api/produtos/cadastrar`  					| POST   | Cria um novo produto                      | ✅ JWT       |
+| `/api/produtos/atualizar/{id}`				| PUT    | Atualiza um produto pelo ID               | ✅ JWT       |
+| `/api/produtos/excluir/{id}`					| DELETE | Remove um produto pelo ID              	 | ✅ JWT       |
+| `/api/dashboard/totalProdutosPorCategoria` 	| GET    | Retorna estatísticas e dados de resumo    | ✅ JWT       |
+
+> ❗ Todos os endpoints exigem envio de um **token JWT válido** no cabeçalho `Authorization: Bearer <token>`.
 
